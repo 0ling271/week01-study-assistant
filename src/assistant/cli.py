@@ -31,7 +31,11 @@ def main(argv: Sequence[str] | None = None) -> None:
     args = parser.parse_args(argv)
 
     if args.command == "ask":
-        answer = ask(args.question, model=args.model)
+        try:
+            answer = ask(args.question, model=args.model)
+        except RuntimeError as exc:
+            # 配置类错误给干净提示，不抛堆栈
+            parser.exit(1, f"错误：{exc}\n")
         note_path = save_note(args.question, answer, args.notes_dir)
         print(answer)
         print(f"\n[已保存] {note_path}")
