@@ -5,6 +5,8 @@ from __future__ import annotations
 import argparse
 from collections.abc import Sequence
 
+from openai import APIError
+
 from .client import ask, save_note
 
 
@@ -36,6 +38,9 @@ def main(argv: Sequence[str] | None = None) -> None:
         except RuntimeError as exc:
             # 配置类错误给干净提示，不抛堆栈
             parser.exit(1, f"错误：{exc}\n")
+        except APIError as exc:
+            # 接口类错误（限流、鉴权、网关等）同样给干净提示
+            parser.exit(1, f"接口调用失败（{exc.status_code}）：{exc.message}\n")
         note_path = save_note(args.question, answer, args.notes_dir)
         print(answer)
         print(f"\n[已保存] {note_path}")
